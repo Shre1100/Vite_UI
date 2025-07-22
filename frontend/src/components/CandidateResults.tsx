@@ -92,7 +92,7 @@ const CandidateResults: React.FC = () => {
   };
 
   const downloadResume = async (candidate: any) => {
-    if (!candidate.resume_id) {
+    if (!candidate.resume_id || !candidate.filepath) {
       alert('Resume download not available for this candidate.');
       return;
     }
@@ -101,10 +101,13 @@ const CandidateResults: React.FC = () => {
     setLoadingMessage('Preparing download...');
 
     try {
-      const response = await resumeAPI.downloadResume(candidate.resume_id);
+      const response = await resumeAPI.downloadResume({
+      resumeId: candidate.resume_id,
+      filepath: candidate.filepath
+    });
       
       // Create download link
-      const blob = new Blob([response], { type: 'application/octet-stream' });
+      const blob = new Blob([response], { type: 'application/pdf' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -141,13 +144,25 @@ const CandidateResults: React.FC = () => {
 
       const response = await resumeAPI.downloadFilteredResumes({
         job_id: currentJobId,
-        resume_ids: resumeIds,
+        filtered_resume_ids: resumeIds,
         filters: filters
       });
-
+      //const blob = new Blob([response], { type: 'application/zip' });
       // Create download link for zip file
-      const blob = new Blob([response], { type: 'application/zip' });
-      const url = window.URL.createObjectURL(blob);
+      if (response instanceof Blob) {
+        const url = window.URL.createObjectURL(response);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'downloadFilteredResumes.zip'; // or dynamic name
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } else {
+          alert('Unexpected response. Download failed.');
+      }
+
+      //const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
       link.download = `filtered_resumes_${new Date().toISOString().split('T')[0]}.zip`;
@@ -174,9 +189,23 @@ const CandidateResults: React.FC = () => {
     try {
       const response = await resumeAPI.downloadAllResumes(currentJobId);
 
+      //const blob = new Blob([response], { type: 'application/zip' });
       // Create download link for zip file
-      const blob = new Blob([response], { type: 'application/zip' });
-      const url = window.URL.createObjectURL(blob);
+      const blob = new Blob([response], { type: 'downloadAllResumes/zip' });
+      if (response instanceof Blob) {
+        const url = window.URL.createObjectURL(response);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'downloadAllResumes.zip'; // or dynamic name
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } else {
+          alert('Unexpected response. Download failed.');
+      }
+
+      //const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
       link.download = `all_resumes_${new Date().toISOString().split('T')[0]}.zip`;
@@ -437,12 +466,12 @@ const CandidateResults: React.FC = () => {
                   <div className="mb-4">
                     <div className="text-sm font-semibold text-gray-700 mb-2">Matched Skills:</div>
                     <div className="flex flex-wrap gap-1">
-                      {candidate.matchedSkills.slice(0, 3).map((skill, skillIndex) => (
+                      {candidate.matchedSkills && Array.isArray(candidate.matchedSkills) && candidate.matchedSkills.slice(0, 3).map((skill, skillIndex) => (
                         <span key={skillIndex} className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
                           {skill}
                         </span>
                       ))}
-                      {candidate.matchedSkills.length > 3 && (
+                      {candidate.matchedSkills && candidate.matchedSkills.length > 3 && (
                         <span className="text-xs text-gray-500">+{candidate.matchedSkills.length - 3}</span>
                       )}
                     </div>

@@ -221,6 +221,7 @@ const AuthPage: React.FC = () => {
       await authAPI.forgotPassword(formData.forgotEmail);
       
       setResetEmail(formData.forgotEmail);
+      setOtpAction('reset_password');
       setOtpSent(true);
       setOtpType('reset_password');
       setShowForgotPassword(false);
