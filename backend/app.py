@@ -215,7 +215,7 @@ def verify_otp():
     data = request.json
     email = data.get('email')
     otp = data.get('otp')
-    action = data.get('action', 'signup')
+    action = data.get('action')  # 'signup' or 'reset_password'
 
     if not supabase:
         return jsonify({"message": "Database not connected. OTP verification is unavailable."}), 500
@@ -223,8 +223,10 @@ def verify_otp():
     try:
         response = supabase.table('users').select('id', 'otp', 'is_verified', 'role', 'full_name', 'hr_id', 'department', 'position').eq('email', email).execute()
         user = response.data[0] if response.data else None
+        #debug statement
+        # print(f"Comparing OTPs: user['otp']={user['otp']} (type {type(user['otp'])}), otp={otp} (type {type(otp)})")
 
-        if not user or user['otp'] != otp:
+        if not user or str(user['otp']) != str(otp):
             return jsonify({"message": "Invalid OTP"}), 401
 
         # Clear OTP and update verification status in Supabase
