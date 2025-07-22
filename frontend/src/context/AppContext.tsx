@@ -84,8 +84,8 @@ interface AppContextType {
   setModalData: (data: any) => void;
 
   // OTP
-  otpAction: string | null;
-  setOtpAction: (action: string | null) => void;
+  otpAction: string ;
+  setOtpAction: (action: string ) => void;
 
   // Session Management
   clearSession: () => void;

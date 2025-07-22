@@ -6,9 +6,9 @@ import { API_BASE_URL } from '../utils/api';
 const OTPVerification: React.FC = () => {
   const { 
     goToPage, 
-    currentUser, 
-    setCurrentUser, 
-    saveUserSession, 
+    user, 
+    setUser, 
+    saveSession, 
     otpAction, 
     setOtpAction,
     setLoading, 
@@ -32,14 +32,19 @@ const OTPVerification: React.FC = () => {
     setLoadingMessage('Verifying OTP...');
 
     try {
+      console.log("OTP verification payload:", {
+      email: user?.email,
+      otp,
+      action: otpAction
+      });
       const response = await fetch(`${API_BASE_URL}/verify_otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: currentUser?.email,
-          otp,
-          action: otpAction
-        })
+        email: user?.email,
+        otp,
+        action: otpAction
+      })
       });
       
       const data = await response.json();
@@ -58,8 +63,8 @@ const OTPVerification: React.FC = () => {
             position: data.position
           };
           
-          setCurrentUser(user);
-          saveUserSession();
+          setUser(user);
+          saveSession(user,);
           
           if (data.role_set) {
             goToPage('jobDescription');
@@ -70,7 +75,7 @@ const OTPVerification: React.FC = () => {
           goToPage('resetPassword');
         }
         
-        setOtpAction(null);
+        setOtpAction('');
       } else {
         setError(data.message || 'OTP verification failed.');
       }
@@ -95,7 +100,7 @@ const OTPVerification: React.FC = () => {
         <h2 className="text-xl font-semibold text-center mb-4">Verify OTP</h2>
         
         <p className="text-center text-gray-600 mb-6">
-          An OTP has been sent to <span className="font-semibold">{currentUser?.email}</span>. 
+          An OTP has been sent to <span className="font-semibold">{user?.email}</span>. 
           Please enter it below.
         </p>
 
