@@ -630,6 +630,10 @@ def clear_session_data():
 def email_verified_success():
     return '✅ Email verified successfully. You can now return to your app and login.'
 
+@app.route('/')
+def home():
+    return 'Backend is running'
+
 @app.route('/<path:path>')
 def catch_all(path):
     # This route is a fallback and might catch requests for static files if not configured correctly
